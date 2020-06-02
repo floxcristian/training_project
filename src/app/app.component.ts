@@ -32,7 +32,7 @@ export class AppComponent implements OnInit {
     },
     {
       title: 'Mensajes',
-      url: '/folder/Archived',
+      url: 'messages',
       icon: 'mail'
     },
     {
