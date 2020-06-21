@@ -15,11 +15,6 @@ export class AppComponent implements OnInit {
       icon: 'newspaper',
     },
     {
-      title: 'Perfil',
-      url: '/folder/Outbox',
-      icon: 'person',
-    },
-    {
       title: 'Notificaciones',
       url: '/folder/Favorites',
       icon: 'notifications',
@@ -30,21 +25,28 @@ export class AppComponent implements OnInit {
       icon: 'mail',
     },
     {
-      title: 'Inscripciones',
-      url: '/folder/Trash',
-      icon: 'build',
-    },
-    {
       title: 'Asignaturas',
       url: '/folder/Spam',
       icon: 'library',
     },
     {
       title: 'Horario',
-      url: '/folder/Spam',
+      url: '/folder/Outbox',
       icon: 'today',
     },
+    {
+      title: 'Beneficios',
+      url: '/folder/Outbox',
+      icon: 'gift',
+    },
+    {
+      title: 'Configuración',
+      url: '/folder/Trash',
+      icon: 'settings',
+    },
   ];
+
+  labels = ['Beca Fotocopia', 'Beca Alimenticia'];
 
   constructor() {}
 

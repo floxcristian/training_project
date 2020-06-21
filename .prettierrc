@@ -7,5 +7,6 @@
   "bracketSpacing": true,
   "arrowParens": "always",
   "quoteProps": "consistent",
-  "proseWrap": "always"
+  "proseWrap": "always",
+  "trailingComma": "none"
 }
