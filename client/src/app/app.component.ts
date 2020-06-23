@@ -4,7 +4,7 @@ import { Component, OnInit } from '@angular/core';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  styleUrls: ['app.component.scss'],
+  styleUrls: ['app.component.scss']
 })
 export class AppComponent implements OnInit {
   public selectedIndex = 0;
@@ -12,38 +12,38 @@ export class AppComponent implements OnInit {
     {
       title: 'Noticias',
       url: '/news',
-      icon: 'newspaper',
+      icon: 'newspaper'
     },
     {
       title: 'Notificaciones',
       url: '/folder/Favorites',
-      icon: 'notifications',
+      icon: 'notifications'
     },
     {
       title: 'Mensajes',
       url: 'messages',
-      icon: 'mail',
+      icon: 'file-tray'
     },
     {
       title: 'Asignaturas',
       url: '/folder/Spam',
-      icon: 'library',
+      icon: 'library'
     },
     {
       title: 'Horario',
       url: '/folder/Outbox',
-      icon: 'today',
+      icon: 'today'
     },
     {
       title: 'Beneficios',
       url: '/folder/Outbox',
-      icon: 'gift',
+      icon: 'gift'
     },
     {
       title: 'Configuración',
       url: '/folder/Trash',
-      icon: 'settings',
-    },
+      icon: 'settings'
+    }
   ];
 
   labels = ['Beca Fotocopia', 'Beca Alimenticia'];

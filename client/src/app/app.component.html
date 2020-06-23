@@ -1,36 +1,31 @@
 <ion-app>
   <ion-split-pane contentId="main-content">
-
     <!-- START: menu -->
     <ion-menu contentId="main-content" type="overlay">
-
       <ion-content>
         <ion-list id="inbox-list">
-          <ion-list-header>Inbox</ion-list-header>
-          <ion-note>hi@ionicframework.com</ion-note>
+          <ion-list-header>Cristian Flores</ion-list-header>
+          <ion-note>18.313.961-4</ion-note>
 
           <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages; let i = index">
-
-            <ion-item (click)="selectedIndex = i" routerDirection="root" [routerLink]="[p.url]" lines="none"
-              detail="false" [class.selected]="selectedIndex == i">
+            <ion-item
+              (click)="selectedIndex = i"
+              routerDirection="root"
+              [routerLink]="[p.url]"
+              lines="none"
+              detail="false"
+              [class.selected]="selectedIndex == i"
+            >
               <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
               <ion-label>{{ p.title }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
-          <ion-item-divider></ion-item-divider>
-          <ion-item lines="none">
-            <ion-icon slot="start" name="settings-sharp"></ion-icon>
-            <ion-label>Configuración</ion-label>
-          </ion-item>
-          <!-- <ion-item-divider></ion-item-divider> -->
         </ion-list>
       </ion-content>
-
     </ion-menu>
     <!-- END: menu -->
 
     <!-- Content -->
     <ion-router-outlet id="main-content"></ion-router-outlet>
-
   </ion-split-pane>
 </ion-app>
