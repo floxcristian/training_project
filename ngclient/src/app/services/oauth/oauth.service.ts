@@ -9,6 +9,6 @@ export class OauthService {
   constructor(public http: HttpClient) {}
 
   loginWithGoogle() {
-    return this.http.get(`${this.API_URL}/api/authorize`);
+    return this.http.get(`${this.API_URL}/api/v1/authorize`);
   }
 }

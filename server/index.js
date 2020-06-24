@@ -4,6 +4,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const { config } = require('./config');
 const fs = require('fs').promises;
+const path = require('path');
 const { google } = require('googleapis');
 const SCOPES = require('./utils/scopes');
 const cors = require('cors');
@@ -11,17 +12,38 @@ const cors = require('cors');
 const app = express();
 
 app.use(express.json());
-app
-  .use(
-    express.urlencoded({
-      extended: false
-    })
-  )
-  .use(
-    cors({
-      origin: '*'
-    })
-  );
+app.use(express.urlencoded({ extended: false }));
+app.use(cors({ origin: '*' }));
+
+let OAuth2Client; // Global OAuth2Client
+
+/**
+ * To use OAuth2 authentication, we need access to a a CLIENT_ID, CLIENT_SECRET, AND REDIRECT_URI.
+ * To get these credentials for your application, visit https://console.cloud.google.com/apis/credentials.
+ */
+const getOAuthKeys = async (key_path) => {
+  try {
+    key_path = path.join(__dirname, key_path);
+    const file_exists = await fs.stat(key_path);
+    if (file_exists) return require(key_path).web;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+/**
+ * Create a new OAuth2 client with the configured keys.
+ */
+const createOAuth2Client = (keys) => {
+  return new google.auth.OAuth2(keys.client_id, keys.client_secret, keys.redirect_uris[0]);
+};
+
+//let oAuth2Client;
+const server = app.listen(8080, async () => {
+  console.log(`Listening http://localhost:${server.address().port}`);
+  const keys = await getOAuthKeys('oauth2.keys.json');
+  OAuth2Client = createOAuth2Client(keys);
+});
 
 // Firma el token (login)
 app.post('/api/auth/token', (req, res, next) => {
@@ -78,14 +100,13 @@ function generateToken(payload) {
 //=== OAUTH
 //==================================
 // Set 1: Ask the authorization code
-app.get('/api/authorize', (req, res, next) => {
+app.get('/api/v1/authorize', (req, res, next) => {
   try {
-    const authUrl = oAuth2Client.generateAuthUrl({
+    const authUrl = OAuth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: SCOPES
     });
-    console.log('authorize...');
-    //res.redirect(authUrl); // reedireccionar
+    //res.redirect(authUrl); // TODO: CORS error.
     res.send({
       authUrl
     });
@@ -94,10 +115,36 @@ app.get('/api/authorize', (req, res, next) => {
   }
 });
 
-let oAuth2Client;
-const server = app.listen(8080, async () => {
-  console.log(`Listening http://localhost:${server.address().port}`);
-  const credentials = JSON.parse(await fs.readFile('credentials.json'));
-  const { client_secret, client_id, redirect_uris } = credentials.web;
-  oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-});
+/**
+ * Open an http server to accept the oauth callback.
+ * In this simple example, the only request to our webserver is to /callback?code=<code>
+ */
+const authenticate = (scopes) => {
+  return new Promise((resolve, reject) => {
+    // Grab the url that will be used for authorization
+    const authorizeUrl = oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: scopes.join(' ')
+    });
+    const server = http
+      .createServer(async (req, res) => {
+        try {
+          if (req.url.indexOf('/oauth2callback') > -1) {
+            const qs = new url.URL(req.url, 'http://localhost:3000').searchParams;
+            res.end('Authentication successful! Please return to the console.');
+            server.destroy();
+            const { tokens } = await oauth2Client.getToken(qs.get('code'));
+            oauth2Client.credentials = tokens; // eslint-disable-line require-atomic-updates
+            resolve(oauth2Client);
+          }
+        } catch (e) {
+          reject(e);
+        }
+      })
+      .listen(3000, () => {
+        // open the browser to the authorize url to start the workflow
+        opn(authorizeUrl, { wait: false }).then((cp) => cp.unref());
+      });
+    destroyer(server);
+  });
+};
