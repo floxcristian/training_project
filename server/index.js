@@ -18,7 +18,10 @@ app.post('/api/auth/token', (req, res, next) => {
     algorithm: 'RS256', // algoritmo asimétrico. Token se crea y firma con una clave privada, pero se verifican con la clave pública.
     expiresIn: '15m'
   };
-  const token = jwt.sign({ sub: username, email, name }, config.authJwtSecret, SIGN_OPTIONS);
+  const token = jwt.sign({ sub: username, email, name }, config.authJwtSecret, {
+    expiresIn: '15m',
+    algorithm: 'RS256'
+  }); // muere con rs256
   res.json({ access_token: token });
 });
 
