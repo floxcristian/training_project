@@ -45,10 +45,7 @@ const server = app.listen(8080, async () => {
   OAuth2Client = createOAuth2Client(keys);
 });
 
-//==================================
-//=== OAUTH
-//==================================
-// Set 1: Ask the authorization code
+// Get authorization url
 app.get('/api/v1/authorize', (req, res, next) => {
   try {
     const authUrl = OAuth2Client.generateAuthUrl({
@@ -56,7 +53,7 @@ app.get('/api/v1/authorize', (req, res, next) => {
       scope: SCOPES
     });
     //res.redirect(authUrl); // TODO: CORS error.
-    res.send({ authUrl });
+    res.status(200).send(authUrl);
   } catch (err) {
     next(err);
   }

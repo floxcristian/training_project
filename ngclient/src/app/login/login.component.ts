@@ -15,9 +15,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   ngOnInit(): void {}
 
   loginWithGoogle() {
-    this.oauthSrv.loginWithGoogle().subscribe((res: any) => {
-      //window.location.href = res.authUrl;
-      window.open(res.authUrl, '_blank'); // Crea un tab
+    this.oauthSrv.loginWithGoogle().subscribe((res: string) => {
+      window.location.href = res;
+      //window.open(res.authUrl, '_blank'); // Crea un tab
       // Llamar a un método del componente desde fuera de la app.
     });
   }

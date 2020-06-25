@@ -24,14 +24,14 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    //this.tokens = this.oauthSrv.getCredentials();
     setTimeout(() => {
       console.log('tokens: ', this.tokens);
     }, 5000);
   }
 
   getEmailLabels() {
-    this.oauthSrv.getGmailLabels(this.tokens).subscribe((res: any) => {
-      console.log('labels: ', res);
+    this.oauthSrv.getGmailLabels(this.tokens).subscribe((res: any[]) => {
       this.labels = res;
     });
   }
