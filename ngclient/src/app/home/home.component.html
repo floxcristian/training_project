@@ -1,1 +1,9 @@
 <h1>Bandeja de Entrada</h1>
+<div class="container">
+  <button class="button__container" (click)="getEmailLabels()">Get Gmail Labels</button>
+</div>
+<ul>
+  <li *ngFor="let label of labels">
+    {{ label.name }}
+  </li>
+</ul>

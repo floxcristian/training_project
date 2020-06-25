@@ -11,4 +11,8 @@ export class OauthService {
   loginWithGoogle() {
     return this.http.get(`${this.API_URL}/api/v1/authorize`);
   }
+
+  getGmailLabels(tokens) {
+    return this.http.post(`${this.API_URL}/api/v1/gmail/labels`, { tokens });
+  }
 }

@@ -38,12 +38,96 @@ const createOAuth2Client = (keys) => {
   return new google.auth.OAuth2(keys.client_id, keys.client_secret, keys.redirect_uris[0]);
 };
 
-//let oAuth2Client;
+// Init Web Server
 const server = app.listen(8080, async () => {
   console.log(`Listening http://localhost:${server.address().port}`);
   const keys = await getOAuthKeys('oauth2.keys.json');
   OAuth2Client = createOAuth2Client(keys);
 });
+
+//==================================
+//=== OAUTH
+//==================================
+// Set 1: Ask the authorization code
+app.get('/api/v1/authorize', (req, res, next) => {
+  try {
+    const authUrl = OAuth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: SCOPES
+    });
+    //res.redirect(authUrl); // TODO: CORS error.
+    res.send({ authUrl });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/v1/callback', async (req, res, next) => {
+  try {
+    console.log('recibe un callback pibe');
+    // Si recibo directamente el código desde OAuth y hago reedirección al cliente con el token
+    const { code } = req.query;
+    const { tokens } = await OAuth2Client.getToken(code);
+    console.log('tokens: ', tokens);
+    // Pasar cabeceras en el reedireccionamiento: https://stackoverflow.com/questions/39997413/how-to-pass-headers-while-doing-res-redirect-in-express-js
+    res.set(tokens);
+    res.redirect(`http://localhost:4200/home?tokens=${JSON.stringify(tokens)}`); // TODO: Best way to send code param?
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/v1/gmail/labels', async (req, res, next) => {
+  try {
+    const { tokens } = req.body;
+    console.log('token: ', tokens);
+    OAuth2Client.setCredentials(JSON.parse(tokens));
+    const gmail = google.gmail({ version: 'v1', auth: OAuth2Client });
+    const resp = await gmail.users.labels.list({ userId: 'me' });
+    const labels = resp.data.labels;
+
+    res.send(labels);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * Open an http server to accept the oauth callback.
+ * In this simple example, the only request to our webserver is to /callback?code=<code>
+ */
+const authenticate = (scopes) => {
+  return new Promise((resolve, reject) => {
+    // Grab the url that will be used for authorization
+    const authorizeUrl = oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: scopes.join(' ')
+    });
+    const server = http
+      .createServer(async (req, res) => {
+        try {
+          // Servidor recibe el código
+          // Si hacen solitud de '/oauth2callback'
+          if (req.url.indexOf('/oauth2callback') > -1) {
+            // Obtiene el 'code' de los queryString (qs)
+            const qs = new url.URL(req.url, 'http://localhost:3000').searchParams;
+            res.end('Authentication successful! Please return to the console.');
+            server.destroy();
+            const { tokens } = await oauth2Client.getToken(qs.get('code'));
+            oauth2Client.credentials = tokens; // eslint-disable-line require-atomic-updates
+            resolve(oauth2Client);
+          }
+        } catch (e) {
+          reject(e);
+        }
+      })
+      .listen(3000, () => {
+        // open the browser to the authorize url to start the workflow
+        opn(authorizeUrl, { wait: false }).then((cp) => cp.unref());
+      });
+    destroyer(server);
+  });
+};
 
 // Firma el token (login)
 app.post('/api/auth/token', (req, res, next) => {
@@ -76,17 +160,6 @@ app.get('/api/auth/verify', (req, res, next) => {
   }
 });
 
-app.get('/api/v1/login', async (req, res, next) => {
-  try {
-    const { code } = req.query;
-    //const { tokens } = await oAuth2Client.getToken(code);
-    //console.log('tokens: ', tokens);
-    res.redirect(`http://localhost:4200/home?code=${code}`);
-  } catch (err) {
-    next(err);
-  }
-});
-
 /*
 function generateToken(payload) {
   const SIGN_OPTIONS = {
@@ -95,56 +168,3 @@ function generateToken(payload) {
   };
   return (token = jwt.sign(payload, config.authJwtSecret, SIGN_OPTIONS));
 }*/
-
-//==================================
-//=== OAUTH
-//==================================
-// Set 1: Ask the authorization code
-app.get('/api/v1/authorize', (req, res, next) => {
-  try {
-    const authUrl = OAuth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: SCOPES
-    });
-    //res.redirect(authUrl); // TODO: CORS error.
-    res.send({
-      authUrl
-    });
-  } catch (err) {
-    next(err);
-  }
-});
-
-/**
- * Open an http server to accept the oauth callback.
- * In this simple example, the only request to our webserver is to /callback?code=<code>
- */
-const authenticate = (scopes) => {
-  return new Promise((resolve, reject) => {
-    // Grab the url that will be used for authorization
-    const authorizeUrl = oauth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: scopes.join(' ')
-    });
-    const server = http
-      .createServer(async (req, res) => {
-        try {
-          if (req.url.indexOf('/oauth2callback') > -1) {
-            const qs = new url.URL(req.url, 'http://localhost:3000').searchParams;
-            res.end('Authentication successful! Please return to the console.');
-            server.destroy();
-            const { tokens } = await oauth2Client.getToken(qs.get('code'));
-            oauth2Client.credentials = tokens; // eslint-disable-line require-atomic-updates
-            resolve(oauth2Client);
-          }
-        } catch (e) {
-          reject(e);
-        }
-      })
-      .listen(3000, () => {
-        // open the browser to the authorize url to start the workflow
-        opn(authorizeUrl, { wait: false }).then((cp) => cp.unref());
-      });
-    destroyer(server);
-  });
-};
