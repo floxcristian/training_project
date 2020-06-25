@@ -7,28 +7,29 @@ import { OauthService } from '../services/oauth/oauth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit {
   constructor(private _ngZone: NgZone, private oauthSrv: OauthService) {
-    window['angularComponentRef'] = { component: this, zone: this._ngZone };
+    //window['angularComponentRef'] = { component: this, zone: this._ngZone };
   }
 
   ngOnInit(): void {}
 
   loginWithGoogle() {
-    this.oauthSrv.loginWithGoogle().subscribe((res: string) => {
-      window.location.href = res;
+    this.oauthSrv.loginWithGoogle().subscribe((res: any) => {
+      window.location.href = res.authUrl;
       //window.open(res.authUrl, '_blank'); // Crea un tab
       // Llamar a un método del componente desde fuera de la app.
     });
   }
 
+  /*
   runThisFunctionFromOutside(token) {
     localStorage.setItem('jwt', token);
     location.href = '../home';
   }
   ngOnDestroy() {
     window['angularComponentRef'] = null;
-  }
+  }*/
 
   /*
   // Detecta si el popup se cierra y habilita el parent window

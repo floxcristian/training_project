@@ -53,22 +53,20 @@ app.get('/api/v1/authorize', (req, res, next) => {
       scope: SCOPES
     });
     //res.redirect(authUrl); // TODO: CORS error.
-    res.status(200).send(authUrl);
+    res.status(200).send({ authUrl });
   } catch (err) {
     next(err);
   }
 });
 
+// Interact with Google
 app.get('/api/v1/callback', async (req, res, next) => {
   try {
-    console.log('recibe un callback pibe');
-    // Si recibo directamente el código desde OAuth y hago reedirección al cliente con el token
     const { code } = req.query;
     const { tokens } = await OAuth2Client.getToken(code);
-    console.log('tokens: ', tokens);
     // Pasar cabeceras en el reedireccionamiento: https://stackoverflow.com/questions/39997413/how-to-pass-headers-while-doing-res-redirect-in-express-js
-    res.set(tokens);
-    res.redirect(`http://localhost:4200/home?tokens=${JSON.stringify(tokens)}`); // TODO: Best way to send code param?
+    //res.set(tokens);
+    res.redirect(`http://localhost:4200/callback?tokens=${JSON.stringify(tokens)}`); // TODO: Best way to send code param?
   } catch (err) {
     next(err);
   }
@@ -78,54 +76,21 @@ app.post('/api/v1/gmail/labels', async (req, res, next) => {
   try {
     const { tokens } = req.body;
     console.log('token: ', tokens);
-    OAuth2Client.setCredentials(JSON.parse(tokens));
-    const gmail = google.gmail({ version: 'v1', auth: OAuth2Client });
-    const resp = await gmail.users.labels.list({ userId: 'me' });
-    const labels = resp.data.labels;
-
-    res.send(labels);
+    if (tokens) {
+      OAuth2Client.setCredentials(JSON.parse(tokens));
+      const gmail = google.gmail({ version: 'v1', auth: OAuth2Client });
+      const resp = await gmail.users.labels.list({ userId: 'me' });
+      const labels = resp.data.labels;
+      return res.send(labels);
+    } else {
+      return res.status(404).send({});
+    }
   } catch (err) {
     next(err);
   }
 });
 
-/**
- * Open an http server to accept the oauth callback.
- * In this simple example, the only request to our webserver is to /callback?code=<code>
- */
-const authenticate = (scopes) => {
-  return new Promise((resolve, reject) => {
-    // Grab the url that will be used for authorization
-    const authorizeUrl = oauth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: scopes.join(' ')
-    });
-    const server = http
-      .createServer(async (req, res) => {
-        try {
-          // Servidor recibe el código
-          // Si hacen solitud de '/oauth2callback'
-          if (req.url.indexOf('/oauth2callback') > -1) {
-            // Obtiene el 'code' de los queryString (qs)
-            const qs = new url.URL(req.url, 'http://localhost:3000').searchParams;
-            res.end('Authentication successful! Please return to the console.');
-            server.destroy();
-            const { tokens } = await oauth2Client.getToken(qs.get('code'));
-            oauth2Client.credentials = tokens; // eslint-disable-line require-atomic-updates
-            resolve(oauth2Client);
-          }
-        } catch (e) {
-          reject(e);
-        }
-      })
-      .listen(3000, () => {
-        // open the browser to the authorize url to start the workflow
-        opn(authorizeUrl, { wait: false }).then((cp) => cp.unref());
-      });
-    destroyer(server);
-  });
-};
-
+/*
 // Firma el token (login)
 app.post('/api/auth/token', (req, res, next) => {
   console.log(req.body);
@@ -134,10 +99,10 @@ app.post('/api/auth/token', (req, res, next) => {
   // Esto es bastante bueno: si publica la clave pública pero conserva la clave privada para usted, solo usted puede firmar tokens, pero cualquiera puede verificar si un token dado está firmado correctamente.
   // atacante tiene acceso a la clave publica y puede enviar un token al servidor especificando un algoritmo HMAC, con lo que el servidor pensara que la clave publica es en realidad la clave secreta de HMAC.
   // en el payload usar el claim kid:
-  /*const SIGN_OPTIONS = {
+  const SIGN_OPTIONS = {
     algorithm: 'RS256', // algoritmo asimétrico. Token se crea y firma con una clave privada, pero se verifican con la clave pública.
     expiresIn: '15m'
-  };*/
+  };
   const token = jwt.sign({ sub: username, email, name }, config.authJwtSecret);
   res.json({ access_token: token });
 });
@@ -155,7 +120,7 @@ app.get('/api/auth/verify', (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+});*/
 
 /*
 function generateToken(payload) {

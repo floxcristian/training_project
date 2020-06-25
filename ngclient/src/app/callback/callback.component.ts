@@ -20,7 +20,11 @@ export class CallbackComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    setTimeout(() => {
+      console.log(this.oauthSrv.getCredentials());
+    }, 5000);
+  }
 
   redirectToHome() {}
 }

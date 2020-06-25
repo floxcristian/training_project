@@ -11,7 +11,7 @@ export class HomeComponent implements OnInit {
   tokens;
   labels;
   constructor(private route: ActivatedRoute, private oauthSrv: OauthService, private router: Router) {
-    this.route.queryParams.subscribe((params) => {
+    /*this.route.queryParams.subscribe((params) => {
       if (params['tokens']) this.tokens = params['tokens'];
     });
 
@@ -20,14 +20,11 @@ export class HomeComponent implements OnInit {
         tokens: null
       },
       queryParamsHandling: 'merge'
-    });
+    });*/
   }
 
   ngOnInit(): void {
-    //this.tokens = this.oauthSrv.getCredentials();
-    setTimeout(() => {
-      console.log('tokens: ', this.tokens);
-    }, 5000);
+    this.tokens = this.oauthSrv.getCredentials();
   }
 
   getEmailLabels() {
