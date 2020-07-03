@@ -10,7 +10,11 @@ import { OauthService } from '../services/oauth/oauth.service';
 export class CallbackComponent implements OnInit {
   tokens: string;
 
-  constructor(private route: ActivatedRoute, private oauthSrv: OauthService, private router: Router) {
+  constructor(
+    private route: ActivatedRoute,
+    private oauthSrv: OauthService,
+    private router: Router
+  ) {
     this.route.queryParams.subscribe((params) => {
       if (params['tokens']) {
         this.tokens = params['tokens'];
@@ -20,11 +24,5 @@ export class CallbackComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    setTimeout(() => {
-      console.log(this.oauthSrv.getCredentials());
-    }, 5000);
-  }
-
-  redirectToHome() {}
+  ngOnInit(): void {}
 }

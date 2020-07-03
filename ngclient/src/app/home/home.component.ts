@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
 import { OauthService } from '../services/oauth/oauth.service';
 
 @Component({
@@ -10,18 +9,7 @@ import { OauthService } from '../services/oauth/oauth.service';
 export class HomeComponent implements OnInit {
   tokens;
   labels;
-  constructor(private route: ActivatedRoute, private oauthSrv: OauthService, private router: Router) {
-    /*this.route.queryParams.subscribe((params) => {
-      if (params['tokens']) this.tokens = params['tokens'];
-    });
-
-    this.router.navigate([], {
-      queryParams: {
-        tokens: null
-      },
-      queryParamsHandling: 'merge'
-    });*/
-  }
+  constructor(private oauthSrv: OauthService) {}
 
   ngOnInit(): void {
     this.tokens = this.oauthSrv.getCredentials();

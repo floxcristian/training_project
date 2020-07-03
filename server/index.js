@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({ origin: '*' }));
 
-let OAuth2Client; // Global OAuth2Client
+let OAuth2Client;
 
 /**
  * To use OAuth2 authentication, we need access to a a CLIENT_ID, CLIENT_SECRET, AND REDIRECT_URI.
@@ -52,7 +52,6 @@ app.get('/api/v1/authorize', (req, res, next) => {
       access_type: 'offline',
       scope: SCOPES
     });
-    //res.redirect(authUrl); // TODO: CORS error.
     res.status(200).send({ authUrl });
   } catch (err) {
     next(err);
@@ -75,7 +74,6 @@ app.get('/api/v1/callback', async (req, res, next) => {
 app.post('/api/v1/gmail/labels', async (req, res, next) => {
   try {
     const { tokens } = req.body;
-    console.log('token: ', tokens);
     if (tokens) {
       OAuth2Client.setCredentials(JSON.parse(tokens));
       const gmail = google.gmail({ version: 'v1', auth: OAuth2Client });
@@ -90,7 +88,6 @@ app.post('/api/v1/gmail/labels', async (req, res, next) => {
   }
 });
 
-/*
 // Firma el token (login)
 app.post('/api/auth/token', (req, res, next) => {
   console.log(req.body);
@@ -120,7 +117,7 @@ app.get('/api/auth/verify', (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});*/
+});
 
 /*
 function generateToken(payload) {
